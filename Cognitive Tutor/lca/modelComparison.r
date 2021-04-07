@@ -1,16 +1,3 @@
-library(loo)
-library(rstan)
-options(mc.cores = parallel::detectCores())
-rstan_options(auto_write = TRUE)
-library(flextable)
-library(officer)
-library(tidyverse)
-
-source('llik.r')
-source('extractFunctions.r')
-
-## not run:
-#source('fitMods.r')
 load('mod.RData')
 load('fit1class.RData')
 load('prelimMods.RData')

@@ -1,12 +1,4 @@
-library(loo)
-library(rstan)
-options(mc.cores = parallel::detectCores())
-rstan_options(auto_write = TRUE)
-library(flextable)
-library(officer)
-library(tidyverse)
 
-load('smallSdat.RData')
 
 #mod <- stan('lca2class2.stan',data=sdat,iter=1000,sample_file='samp.txt',refresh=10)
 
@@ -28,6 +20,13 @@ sdat$sigStud <- 5
 fit5 <- optimizing(mod,data=sdat,hessian=TRUE)#,draws=2000,importance_resampling=TRUE)
 
 save(fit0,fit.5,fit1,fit2,fit5,sdat,file='mod.RData')
+
+for(sig in c('0','.5','1','2','5')){
+    fit <- get(paste0('fit',sig))
+    assign(paste0('ppp',sig),parList(fit$par))
+    assign(paste0('invHes',sig),solve(fit$hessian))
+}
+save(list=outer(c('ppp','invHes'),c('0','.5','1','2','5'),paste0),file='parSE.RData')
 
 oneClassMod <- stan_model('lca1class.stan')
 fit1class <- optimizing(oneClassMod,data=sdat,hessian=TRUE,draws=2000,importance_resampling=TRUE)

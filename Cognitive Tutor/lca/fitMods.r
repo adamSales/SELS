@@ -23,7 +23,9 @@ save(fit0,fit.5,fit1,fit2,fit5,sdat,file='mod.RData')
 
 for(sig in c('0','.5','1','2','5')){
     fit <- get(paste0('fit',sig))
-    assign(paste0('ppp',sig),parList(fit$par))
+    ppp <- parList(fit$par)
+    names(ppp$beta) <- colnames(sdat$X)
+    assign(paste0('ppp',sig),ppp)
     assign(paste0('invHes',sig),solve(fit$hessian))
 }
 save(list=outer(c('ppp','invHes'),c('0','.5','1','2','5'),paste0),file='parSE.RData')

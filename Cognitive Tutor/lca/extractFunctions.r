@@ -176,7 +176,7 @@ altClassTab <- function(parList,ppp,SEs,invHes,sig){
     if(out$`Class 1`[out$Parameter=='meanTime']>out$`Class 2`[out$Parameter=='meanTime']){
         nnn <- names(out)
         nnn[grep('1',names(out))] <- names(out)[grep('2',names(out))]
-        nnn[grep('2',nnn)] <- names(out)[grep('1',names(out))]
+        nnn[grep('2',names(out))] <- names(out)[grep('1',names(out))]
         names(out) <- nnn
         out$Difference <- -out$Difference
     }

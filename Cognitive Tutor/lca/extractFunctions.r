@@ -58,6 +58,8 @@ posterior <- function(i,ppp,sdat){
 }
 
 
+
+
 lik <- function(i,cls,ppp,sdat)
     with(sdat,
          ologit(hint[i],ppp$probEff[prob[i],1]+ppp$effHint[cls],ppp$cHint)*
@@ -154,13 +156,17 @@ altClassTab1 <- function(parname,ppp,SEs,invHes,sig){
 
 }
 
-altCoefTab1 <- function(ppp,SEs,sig)
-    tibble(
+altCoefTab1 <- function(ppp,SEs,sig){
+    out <- tibble(
         covariate=names(ppp$beta),
         sigStud=sig,
         Est=ppp$beta,
         SE=SEs$beta
     )
+    if(ppp$meanTime[1]<ppp$meanTime[2])
+        out$Est <- -out$Est
+    out
+}
 
 altClassTab <- function(parList,ppp,SEs,invHes,sig){
 

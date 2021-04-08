@@ -34,6 +34,7 @@ names(ind) <- c(c(
             effHint='Hint')[pars],'Probability')
 
 sink('appendix2table1.tex')
+
 altTab1%>%
     mutate(        sigStud=ifelse(sigStud=='.5','0.5',sigStud))%>%
     arrange(factor(Parameter,levels=c(pars,'Probability')),sigStud)%>%
@@ -81,7 +82,7 @@ ggsave('measurementParCompare.jpg')
 
 
 
-
+names(ppp1$beta) <- colnames(sdat$X)
 
 altTab2 <- altCoefTab1(ppp=ppp1,SEs=SEs1,sig='1')
 
@@ -114,9 +115,25 @@ names(ind) <- names(ppp1$beta)
 altTab2%>%
     mutate(sigStud=ifelse(sigStud=='.5','0.5',sigStud))%>%
 ggplot(aes(factor(covariate,levels=colnames(sdat$X)),Est,color=sigStud,group=sigStud,ymin=Est-2*SE,ymax=Est+2*SE))+
-    geom_point(position=position_dodge(width=0.2))+
-    geom_errorbar(position=position_dodge(width=0.2),width=0)+
+    geom_point(position=position_dodge(width=0.7))+
+    geom_errorbar(position=position_dodge(width=0.7),width=0)+
     geom_hline(yintercept=0)+
     labs(x=NULL,y='Coefficient Estimate',color=expression(paste("SD(",eta,")")))
 ggsave('coefCompare.jpg')
 
+posts <- map(c('0','.5','1','2','5')%>%setNames(.,.),
+             function(sig)
+                 map_dbl(1:sdat$nworked,posterior,ppp=get(paste0('ppp',sig),envir=.GlobalEnv),sdat=sdat)
+             )
+
+logodds1 <- qlogis(posts1)
+
+mf <- data.frame(stud=sdat$stud)
+mf <- cbind(mf,sdat$X[sdat$stud,])
+
+mods <- map(posts, function(probs){
+    mf$logodds <- qlogis(probs)
+    lmer(logodds~pretest+gainscore+race2+race3+sex+frl+(1|stud),data=mf)
+})
+
+sds <- map_dbl(mods,~sqrt(VarCorr(.)$stud))

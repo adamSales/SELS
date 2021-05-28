@@ -27,5 +27,6 @@ source('modelComparison.r')
 ### main parameter & coef tables
 source('mainTables.r')
 
-### stuff for appendix 2
-source('appendix2.r')
+### Fit the main model in stan and produce the tables, etc
+source('fit.r')
+source('stanTables.r')

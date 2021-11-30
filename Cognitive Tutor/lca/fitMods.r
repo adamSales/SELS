@@ -2,6 +2,12 @@
 
 #mod <- stan('lca2class2.stan',data=sdat,iter=1000,sample_file='samp.txt',refresh=10)
 
+mod <- stan_model('lca2classGam.stan')
+
+fitGam <- optimizing(mod,data=sdat,hessian=TRUE)
+
+save(fitGam,file='fitGam.1.RData')
+
 mod <- stan_model('lca2class2.stan')
 
 sdat$sigStud <- 0.001

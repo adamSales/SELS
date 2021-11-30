@@ -26,3 +26,12 @@ map_dfr(
 
 
 
+#### posterior probabilities for example students
+## "10390705014x" 57 observations:
+stud643 <- 1-postStud( "852",sdat,ppp1)
+## 30010304012 79 obs
+stud2117 <- 1-postStud("1207",sdat,ppp1)
+## 50010102012 50 obs
+stud1081 <- 1-postStud("1771",sdat,ppp1)
+
+save(stud643,stud2117,stud1081,file='exampleStudents.RData')

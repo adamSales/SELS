@@ -13,10 +13,24 @@ traceplot(mod,par='lp__')
 traceplot(mod,par='beta')
 
 ## measurement parameters
-meas0 <- extract(mod,par=c('meanTime','sigTime','effErr','effHint'),permute=FALSE)
+meas0 <- rstan::extract(mod,par=c('meanTime','sigTime','effErr','effHint','cHint','cErr'),permute=FALSE)
+
+measd0 <- tibble(
+  draw=as.vector(meas0),
+  iter=rep(1:dim(meas0)[1],prod(dim(meas0)[2:3])),
+  chain=rep(rep(dimnames(meas0)$chains,each=dim(meas0)[1]),dim(meas0)[3]),
+  parameter=rep(dimnames(meas0)$parameters,each=prod(dim(meas0)[1:2]))
+)
+
+ggplot(measd0,aes(iter,draw,color=chain,group=chain))+
+  geom_line()+
+  facet_wrap(~parameter,scales="free_y")
+
+
 
 ## some reverse coding necessary....
-means <- apply(meas0,c(2,3),mean)
+means <- apply(meas0,c(2,3),mean)%>%
+  as.data.frame()%>%select(-starts_with('c'))
 
 ## for Appendix A
 xtable(means)
@@ -26,7 +40,7 @@ xtable(means)
 revCode <- which(trunc(means[,'sigTime[1]']*10)==8)
 
 meas <- meas0
-meas[,revCode,] <- meas[,revCode,c(2,1,4,3,6,5,8,7)]
+meas[,revCode,] <- meas[,revCode,c(2,1,4,3,6,5,8,7,9:12)]
 
 apply(meas,c(2,3),mean)
 
@@ -65,6 +79,7 @@ disp <- function(x) paste0(
                     )
 
 tab2 <- measd%>%
+  filter(!startsWith(parameter,'c'))%>%
     mutate(par=substr(parameter,1,nchar(parameter)-3),
            par=factor(par,levels=unique(par)),
            class=substr(parameter,nchar(parameter)-1,nchar(parameter)-1)
@@ -76,8 +91,14 @@ tab2 <- measd%>%
         `Difference`=disp(draw[class=='1']-draw[class=='2'])
     )
 
+cTab <- measd%>%
+  filter(startsWith(parameter,'c'))%>%
+  group_by(parameter)%>%
+  summarize(`State 1`=disp(draw))
+  
+
 ### probabilities
-nu <- extract(mod,par='nu',permute=FALSE)
+nu <- rstan::extract(mod,par='nu',permute=FALSE)
 nu[,revCode,] <- 1-nu[,revCode,]
 quantile(apply(nu,3,rhat))
 
@@ -106,7 +127,7 @@ print(xtable(tab2),include.rownames=FALSE,
       floating=FALSE)
 
 ## coef table
-beta <- extract(mod,par='beta',permute=FALSE)
+beta <- rstan::extract(mod,par='beta',permute=FALSE)
 
 beta[,revCode,] <- -beta[,revCode,]
 beta <- -beta ## parameterized model opposite like
@@ -124,7 +145,7 @@ tab3 <- tibble(
     
                  
 
-varComp <- summary(mod,par=c('sigProb','OmegaProb','sigStud'),probs=c(0.025,0.975))$summary
+varComp <- summary(mod,par=c('sigProb','OmegaProb','sigStud'),probs=c(0.025,0.975))$summary%>%round(3)
 
 
 ## variance of fitted values
